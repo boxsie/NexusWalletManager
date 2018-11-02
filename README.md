@@ -1,1 +1,1 @@
-# NexusNodeManager
+# NexusWalletManager
