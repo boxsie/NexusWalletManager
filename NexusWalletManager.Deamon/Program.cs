@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using BoxsieApp.Core;
 using NexusWalletManager.Core;
 
 namespace NexusWalletManager.Deamon
@@ -8,13 +9,9 @@ namespace NexusWalletManager.Deamon
     {
         private static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            BoxsieAppStartup.Start<AppStartup, App>();
 
-            var bs = new WalletBootstrap();
-
-            Task.Run(WalletBootstrap.Download);
-
-            Console.ReadLine();
+            Console.Read();
         }
     }
 }

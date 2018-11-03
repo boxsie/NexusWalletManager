@@ -4,4 +4,27 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Config\bootstrap.live.json" />
+    <None Remove="Config\general.live.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Config\Json\wallet.live.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Config\Json\general.live.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\BoxsieApp\BoxsieApp.Core\BoxsieApp.Core.csproj" />
+  </ItemGroup>
+
 </Project>

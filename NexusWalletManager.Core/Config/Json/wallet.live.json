@@ -1,0 +1,7 @@
+﻿{
+  "InstallerDir": "Installer",
+  "InstallerFilename": "nexus-cli",
+  "BootstrapDir": "Bootstrap",
+  "BootstrapFilename": "bootstrap.zip",
+  "UserConfigFilename": "wallet.user.json"
+}
