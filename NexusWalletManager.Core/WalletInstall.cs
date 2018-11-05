@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using BoxsieApp.Core.Config;
 using BoxsieApp.Core.Logging;
 using BoxsieApp.Core.Net;
-using BoxsieApp.Core.Storage;
+using BoxsieApp.Core;
 using NexusWalletManager.Core.Config;
 
 namespace NexusWalletManager.Core
@@ -35,14 +35,15 @@ namespace NexusWalletManager.Core
 
         private async Task DownloadAsync()
         {
-            var platform = StorageUtils.GetPlatform();
-            var filePath = Path.Combine(_walletInstallerPath, $"{_walletConfig.InstallerFilename}{(platform == OS.Windows ? ".exe" : "")}");
+            var platform = BoxsieUtils.GetPlatform();
+            var url = _walletConfig.UserConfig.InstallerUrls[platform];
+            var filePath = Path.Combine(_walletInstallerPath, WalletUtils.GetWalletExecuteableFilename());
 
             using (var client = _httpClientFactory.GetHttpFileDownload())
             {
-                await client.DownloadAsync(_walletConfig.UserConfig.InstallerUrls[platform], filePath, (x) =>
+                await client.DownloadAsync(url, filePath, (x) =>
                 {
-                    var progressBar = StorageUtils.CreateProgressBar(x.Percent, 50);
+                    var progressBar = BoxsieUtils.CreateProgressBar(x.Percent, 50);
 
                     Console.Write(x.Percent < 100
                         ? $"\rDownloading installer.. {progressBar} {Math.Round(x.Percent, 3):N3}% {x.MegabytesPerSecond:N3}Mb/s {x.RemainingTime:hh\\:mm\\:ss} remaining   "

@@ -1,6 +1,6 @@
 ﻿{
   "AppName": "NexusWalletManager",
-  "DbFilename": "nwm.db",
+  "DbFilename": "applicationdata.db",
   "UserDataDirName": "NexusWalletManager",
   "EncryptKeyBase": "E546C8DF278CD5931069B522E695D4F2",
   "UserConfigFilename": "general.user.json"

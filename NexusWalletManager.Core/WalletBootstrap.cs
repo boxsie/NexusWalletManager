@@ -1,59 +1,101 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using BoxsieApp.Core.Config;
+using BoxsieApp.Core.Data;
 using BoxsieApp.Core.Logging;
 using BoxsieApp.Core.Net;
+using BoxsieApp.Core.Repository;
+using BoxsieApp.Core;
 using BoxsieApp.Core.Storage;
 using NexusWalletManager.Core.Config;
 
 namespace NexusWalletManager.Core
 {
-    public class WalletInstall
+    public enum WalletStatus
     {
-        private readonly HttpClientFactory _httpClientFactory;
-        private readonly WalletConfig _walletConfig;
-        private readonly ILog _logger;
-        private readonly string _walletInstallerPath;
+        OK,
+        NotRunning,
+        Error
+    }
 
-        public WalletInstall(HttpClientFactory httpClientFactory, GeneralConfig generalConfig, WalletConfig walletConfig, ILog logger)
+    public class WalletService
+    {
+        private readonly IRepository<WalletInfo> _walletRepo;
+
+        public WalletService(IRepository<WalletInfo> walletRepo, GeneralConfig config)
         {
-            _httpClientFactory = httpClientFactory;
-            _walletConfig = walletConfig;
-            _logger = logger;
-
-            _walletInstallerPath = Path.Combine(generalConfig.UserConfig.UserDataPath, _walletConfig.InstallerDir);
+            _walletRepo = walletRepo;
         }
 
-        public async Task CheckForWalletAsync(string name)
+        public async Task StartAsync()
         {
-            if (!Directory.Exists(_walletInstallerPath))
-                Directory.CreateDirectory(_walletInstallerPath);
+            await _walletRepo.CreateTable(nameof(WalletInfo));
 
-            await DownloadAsync();
-        }
-
-        private async Task DownloadAsync()
-        {
-            var platform = StorageUtils.GetPlatform();
-            var filePath = Path.Combine(_walletInstallerPath, $"{_walletConfig.InstallerFilename}{(platform == OS.Windows ? ".exe" : "")}");
-
-            using (var client = _httpClientFactory.GetHttpFileDownload())
+            await CreateWalletAsync(new WalletInfo
             {
-                await client.DownloadAsync(_walletConfig.UserConfig.InstallerUrls[platform], filePath, (x) =>
-                {
-                    var progressBar = StorageUtils.CreateProgressBar(x.Percent, 50);
+                Name = "Moop",
+                Location = "Moop",
+                DataDir = "Moop",
+                RpcUsername = "Moop",
+                RpcPassword = "Moop",
+                CreatedOn = DateTime.Now,
+                UpdatedOn = DateTime.Now
+            });
+        }
 
-                    Console.Write(x.Percent < 100
-                        ? $"\rDownloading installer.. {progressBar} {Math.Round(x.Percent, 3):N3}% {x.MegabytesPerSecond:N3}Mb/s {x.RemainingTime:hh\\:mm\\:ss} remaining   "
-                        : $"\rDownloading installer.. {progressBar} {Math.Round(x.Percent, 3):N3}% {TimeSpan.FromSeconds(x.TotalSeconds):hh\\:mm\\:ss} complete             ");
-                });
+        public async Task CreateWalletAsync(WalletInfo walletInfo)
+        {
+            var existingWallet = await _walletRepo.GetWhereAsync(new List<WhereClause>
+            {
+                new WhereClause(nameof(WalletInfo.Location), "=", walletInfo.Location, "OR"),
+                new WhereClause(nameof(WalletInfo.Name), "=", walletInfo.Name)
+            });
 
-                Console.WriteLine();
-                await _logger.WriteLineAsync($"Nexus {platform} installer download complete", LogLvl.Info);
-            }
+            await _walletRepo.CreateAsync(walletInfo);
+        }
+
+        public async Task AddExistingWalletAsync()
+        {
+
+        }
+    }
+
+    public class WalletInfo : IEntity
+    {
+        public string Name { get; set; }
+        public string Location { get; set; }
+        public string DataDir { get; set; }
+        public string RpcUsername { get; set; }
+        public string RpcPassword { get; set; }
+        public DateTime CreatedOn { get; set; }
+        public DateTime UpdatedOn { get; set; }
+    }
+
+    public class Wallet
+    {
+        public WalletStatus Status { get; set; }
+        public WalletInfo Info { get; set; }
+    }
+
+    public static class WalletUtils
+    {
+        public static string BuildConf(this WalletInfo info)
+        {
+            return $@"rpcuser={info.RpcUsername}
+                      rpcpassword={info.RpcPassword}
+                      rpcallowip=127.0.0.1";
+        }
+
+        public static string GetWalletExecuteableFilename()
+        {
+            var cfg = Cfg.GetConfig<WalletConfig>();
+            var platform = BoxsieUtils.GetPlatform();
+
+            return $"{cfg.InstallerFilename}{(platform == OS.Windows ? ".exe" : "")}";
         }
     }
 
@@ -102,7 +144,7 @@ namespace NexusWalletManager.Core
             {
                 await client.DownloadAsync(_walletConfig.UserConfig.BootstrapUrl, _bootstrapFilePath, (x) =>
                 {
-                    var progressBar = StorageUtils.CreateProgressBar(x.Percent, 50);
+                    var progressBar = BoxsieUtils.CreateProgressBar(x.Percent, 50);
 
                     Console.Write(x.Percent < 100
                         ? $"\rDownloading bootstrap.. {progressBar} {Math.Round(x.Percent, 3):N3}% {x.MegabytesPerSecond:N3}Mb/s {x.RemainingTime:hh\\:mm\\:ss} remaining   "

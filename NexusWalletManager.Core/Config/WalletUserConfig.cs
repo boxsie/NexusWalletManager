@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using BoxsieApp.Core.Config.Contracts;
+using BoxsieApp.Core;
 using BoxsieApp.Core.Storage;
 
 namespace NexusWalletManager.Core.Config

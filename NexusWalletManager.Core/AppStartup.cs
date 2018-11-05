@@ -17,6 +17,9 @@ namespace NexusWalletManager.Core
 
         protected override void ConfigureServices(IServiceCollection services)
         {
+            services.AddTransient<IRepository<WalletInfo>, Repository<WalletInfo>>();
+
+            services.AddTransient<WalletService>();
             services.AddTransient<WalletInstall>();
             services.AddTransient<WalletBootstrap>();
         }

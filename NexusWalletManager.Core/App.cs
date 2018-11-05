@@ -5,19 +5,16 @@ namespace NexusWalletManager.Core
 {
     public class App : IBoxsieApp
     {
-        private readonly WalletInstall _install;
-        private readonly WalletBootstrap _bootstrap;
+        private readonly WalletService _walletService;
 
-        public App(WalletInstall install, WalletBootstrap bootstrap)
+        public App(WalletService walletService)
         {
-            _install = install;
-            _bootstrap = bootstrap;
+            _walletService = walletService;
         }
 
         public async Task StartAsync()
         {
-            await _install.CheckForWalletAsync("wallet-1");
-            await _bootstrap.CheckForBootstrapAsync();
+            await _walletService.StartAsync();
         }
     }
 }
